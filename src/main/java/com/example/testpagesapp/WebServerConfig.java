@@ -13,7 +13,7 @@ public class WebServerConfig {
     public WebServerFactoryCustomizer<ConfigurableWebServerFactory> webServerFactoryCustomizer() {
         return factory -> {
             // Register our custom status code 678
-            factory.addErrorPages(new org.springframework.boot.web.server.ErrorPage(HttpStatus.valueOf(678)));
+            factory.addErrorPages(new org.springframework.boot.web.server.ErrorPage(HttpStatus.valueOf(678), "/error-678"));
         };
     }
 }
