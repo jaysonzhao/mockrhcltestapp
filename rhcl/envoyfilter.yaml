@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: gateway-200-business-redirect
+  namespace: test-pages
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inline_code: |
+              function envoy_on_response(response_handle)
+                -- 1. Check if the status is 200
+                local status = response_handle:headers():get(":status")
+                
+                -- 2. Check for the specific business header
+                local b_code = response_handle:headers():get("businesscode")
+                
+                -- 3. Trigger redirect only if both conditions are met
+                if status == "200" and b_code == "9999" then
+                  -- Change the status from 200 to 302 to force the browser to move
+                  response_handle:headers():replace(":status", "302")
+                  -- Set the redirect destination
+                  response_handle:headers():replace("location", "/pagea")
+                  
+                  -- Optional: Remove the header so the client doesn't see it
+                  response_handle:headers():remove("businesscode")
+                  
+                  response_handle:logInfo("Status 200 + Code 9999 detected: Redirecting to /pagea")
+                end
+              end
+  workloadSelector:
+    labels:
+      gateway.networking.k8s.io/gateway-name: external-auth-gateway
