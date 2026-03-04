@@ -37,7 +37,8 @@ spec:
                   
                   -- Optional: Remove the header so the client doesn't see it
                   response_handle:headers():remove("businesscode")
-                  
+                  -- Add the new requested header
+                  response_handle:headers():add("changecode", "12345")
                   response_handle:logInfo("Status 200 + Code 9999 detected: Redirecting to /pagea")
                 end
               end
