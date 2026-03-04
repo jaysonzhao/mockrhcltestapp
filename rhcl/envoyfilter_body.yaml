@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: gateway-200-business-redirect
+  namespace: test-pages
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.lua
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            inline_code: |
+              function envoy_on_response(response_handle)
+               
+              local b_code = response_handle:headers():get("businesscode")
+
+              if b_code == "9999" then
+                -- 1. Create your new JSON body
+                local new_body = '{"status": "redirecting", "code": "12345", "target": "/pagea"}'
+                
+                -- 2. Set the new body and update Content-Length
+                response_handle:body():setBytes(new_body)
+                response_handle:headers():replace("content-length", string.len(new_body))
+                response_handle:headers():replace("content-type", "application/json")
+                
+                -- 3. Add your custom header
+                response_handle:headers():add("changecode", "12345")
+                end
+              end
+  workloadSelector:
+    labels:
+      gateway.networking.k8s.io/gateway-name: external-auth-gateway
