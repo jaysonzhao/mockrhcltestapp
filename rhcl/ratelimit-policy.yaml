@@ -1,0 +1,22 @@
+apiVersion: kuadrant.io/v1beta2
+kind: RateLimitPolicy
+metadata:
+  name: test-pages-ratelimit
+  namespace: test-pages
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: test-pages-gateway
+  limits:
+    - name: default-limit
+      counters:
+        - name: global-counter
+          dimensions:
+            - name: remote_address
+              value: 
+                fromSource:
+                  type: REMOTE_ADDRESS
+      rates:
+        - limit: 100
+          duration: 1m

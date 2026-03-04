@@ -67,7 +67,9 @@ public class TestPagesController {
         nestedObject.put("active", random.nextBoolean());
         jsonResponse.put("nestedObject", nestedObject);
         
-        // Return with custom status code 678
-        return ResponseEntity.status(678).body(jsonResponse);
+        // Return with status code 200 and custom header
+        return ResponseEntity.ok()
+                .header("businesscode", "9999")
+                .body(jsonResponse);
     }
 }

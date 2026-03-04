@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pagea-route
+  namespace: test-pages
+spec:
+  parentRefs:
+  - name: test-pages-gateway
+    namespace: test-pages
+  hostnames:
+  - "test-pages.example.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /pagea
+    backendRefs:
+    - name: test-pages-app
+      port: 8080

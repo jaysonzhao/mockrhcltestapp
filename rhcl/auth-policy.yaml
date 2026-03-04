@@ -1,0 +1,20 @@
+apiVersion: kuadrant.io/v1beta2
+kind: AuthPolicy
+metadata:
+  name: test-pages-auth
+  namespace: test-pages
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: pageb-route
+  rules:
+  - name: api-key-auth
+    apiKey:
+      selector:
+        matchLabels:
+          app: test-pages
+      credentials:
+        name: api-keys
+        in: header
+        keySelector: x-api-key
